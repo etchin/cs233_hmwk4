@@ -30,7 +30,7 @@ def find_nearest_neighbors(X, k=10):
     adj_m = adjacency_matrix(X)
     nn_dict = dict()
     for i in range(adj_m.shape[0]):
-        nn_dict[i] = ((m,adj_m[i,m]) for m in np.argsort(adj_m[i,])[:k])
+        nn_dict[i] = [(m,adj_m[i,m]) for m in np.argsort(adj_m[i,])[:k]]
     return(nn_dict)
 
 def model_stats(latent_vectors,shape_names,part_dist):
@@ -40,7 +40,8 @@ def model_stats(latent_vectors,shape_names,part_dist):
     matched_dist = 0
     for key in sorted(knn.keys()):
         sn_id = shape_names[key]
-        (neighbor_id,m_dist) = shape_names[knn[key][0]]
+        neighbor_id = shape_names[knn[key][0][0]]
+        m_dist = knn[key][0][1]
         matched_dist += m_dist
         x_loc = id_to_part_loc[sn_id][part_id]
         for i,part in enumerate(sn_id_to_parts[sn_id]):
