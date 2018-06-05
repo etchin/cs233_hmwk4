@@ -164,7 +164,8 @@ class cs233PointAutoEncoder(Neural_Net):
                 # Students: add code that checks if the validation got better. If it did, save the model.
                 if v_loss < val_loss_best:
                     val_loss_best = v_loss
-                    self.saver.save(self.sess, checkpoint_path)
+                    save_path = osp.join(checkpoint_path, '-'+str(int(_))
+                    self.saver.save(self.sess, save_path)
                     
 
         return np.array(train_loss), np.array(val_loss), np.array(test_loss)

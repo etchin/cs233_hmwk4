@@ -107,17 +107,18 @@ if do_training:
 
         
 # Plot the training, etc. loss
+
 do_plot = True
 
 if do_plot:
     
     file_out_plot = osp.join(save_dir, 'error_plot.png')
         
-    x = range(1, n_epochs+1)
-    plt.plot(x, train_loss, 'o-', x, val_loss, 'o-', x, test_loss, 'o-')
+    x1 = range(1, n_epochs + 1)
+    x2 = range(2, n_epochs + 1, held_out_step)
+    plt.plot(x1, train_loss, 'o-', x2, val_loss, 'o-', x2, test_loss, 'o-')
     plt.legend(["Training", "Validation", "Test"])
     plt.savefig(file_out_plot)
-    #plt.show()
         
 # Done Training? Congrats!
 
@@ -126,7 +127,7 @@ if do_plot:
 
 
 # Load model on optimal (per validation) epoch.
-epoch_to_restore = val_loss.index(max(val_loss))# Student #DID THIS!
+epoch_to_restore = np.argmin(val_loss)# Student
 ae.restore_model(save_dir, epoch_to_restore, verbose=True) # Could also restore the model that was saved from file
 
 # Students: Save-plot reconstructions.
@@ -135,7 +136,6 @@ in_pc = test_data.pcs[:n_plots]
 in_names = test_data.model_names[:n_plots]
 in_masks = test_data.part_masks[:n_plots]
 
-# Students: Save-plot reconstructions.
 
 test_pcs = test_data.pcs
 test_names = test_data.model_names
@@ -154,9 +154,10 @@ n_plots = 5
 in_pc = test_data.pcs[:n_plots]
 in_names = test_data.model_names[:n_plots]
 
+
 for i in range(n_plots):
     
-    original_figure_file = osp.join(save_dir, 'original_figure', i, '.png')
+    original_figure_file = osp.join(save_dir, 'original_figure_'+str(i)+'.png')
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -164,10 +165,10 @@ for i in range(n_plots):
     plt.savefig(original_figure_file)
 
     
-    reconstr_figure_file = osp.join(save_dir, 'reconstr_figure', i, '.png')
+    reconstr_figure_file = osp.join(save_dir, 'reconstr_figure_'+str(i)+'.png')
 
     fig = plt.figure()
-    ax = fig.add_subplot(211, projection='3d')
+    ax = fig.add_subplot(111, projection='3d')
     ax.scatter(test_reconstr[i,:,0], test_reconstr[i,:,1], test_reconstr[i,:,2], marker='.')
     plt.savefig(reconstr_figure_file)
 
