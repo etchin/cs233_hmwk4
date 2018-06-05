@@ -31,7 +31,7 @@ class cs233PointAutoEncoder(Neural_Net):
         self.in_pc = tf.placeholder(tf.float32, shape = (50, 1024, 3), name = 'input_pcs')      # Students. Create appropriate placeholders.
             
         if c.use_parts:
-            self.part_mask = tf.placeholder(tf.int32, shape = (50, 1024), name = 'input_part_masks')
+            self.part_mask = tf.placeholder(tf.int32, shape = (self.in_pc.shape[0], self.in_pc.shape[1]), name = 'input_part_masks')
                     
         with tf.variable_scope(name):            
             self.z = c.encoder(self.in_pc, **c.encoder_args)            # Encoder registration.
@@ -41,8 +41,11 @@ class cs233PointAutoEncoder(Neural_Net):
             self.pc_reconstr = tf.reshape(dec_out, self.in_pc.shape, name = 'reconstructed_pcs') # Students. reshape?
                                     
             if c.use_parts:                    
-                if c.part_pred_with_one_layer:                                    
-                    self.part_pred = 0 # Dan & Liz: You should change this
+                if c.part_pred_with_one_layer:
+                    layer = tf.expand_dims(self.z, axis=1)
+                    layer = tf.tile(layer, (1,1024,1))
+                    layer = tf.concat((self.in_pc, layer), axis=2)
+                    self.part_pred = conv_1d(layer, c.n_parts, 1, 'part_segmentation_fc', activation_fn=tf.nn.softmax)
                 else:                    
                     self.part_pred = 0 # Dan & Liz: You should change this
                                         
@@ -50,12 +53,11 @@ class cs233PointAutoEncoder(Neural_Net):
         dist1, idx1, dist2, idx2 = nn_distance(self.in_pc, self.pc_reconstr)
         self.recon_loss = tf.reduce_mean(dist1 + dist2)           
         
-        self.part_loss = 0
+        self.part_loss = tf.zeros(1)
         if c.use_parts:
             # Add X-entropy Loss.
-            pass # Dan & Liz: You should change this
-        # Dan & Liz: See the Piazza post "HW 4. Defining and combining the loss." for explanation
-        self.total_loss = self.recon_loss + c.part_weight*self.part_loss # Students.
+            self.part_loss = tf.losses.sparse_softmax_cross_entropy(self.part_mask,self.part_pred,weights=c.part_weight)
+        self.total_loss = tf.add(self.recon_loss, self.part_loss) # Students.
 
         # Optimizer
         self.lr = c.learning_rate
@@ -66,8 +68,7 @@ class cs233PointAutoEncoder(Neural_Net):
         self.no_op = tf.no_op()
         if c.use_parts:
             # Define Part Prediction (accuracy) ops.
-            pass # Dan & Liz: You should change this
-        
+            parts_accuracy = tf.metrics.accuracy(self.part_mask,tf.argmax(self.part_pred,axis=2))
         
         self.saver = tf.train.Saver(tf.global_variables(), max_to_keep=c.saver_max_to_keep)         
         self.start_session(allow_growth=c.allow_gpu_growth)
@@ -162,7 +163,7 @@ class cs233PointAutoEncoder(Neural_Net):
                     fout.write('Val/Test epoch/loss: %d %s %s\n' % (epoch, str(v_loss), str(t_loss)))                              
                 
                 # Students: add code that checks if the validation got better. If it did, save the model.
-                if v_loss < val_loss_best:
+                if np.sum(v_loss) < np.sum(val_loss_best):
                     val_loss_best = v_loss
                     save_path = osp.join(checkpoint_path, '-'+str(int(_))
                     self.saver.save(self.sess, save_path)
