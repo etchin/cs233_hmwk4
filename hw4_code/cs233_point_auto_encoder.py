@@ -159,11 +159,12 @@ class cs233PointAutoEncoder(Neural_Net):
                     print('Val/Test epoch/loss:', epoch, v_loss, t_loss)
                 
                 if fout is not None:
-                    fout.write('Val/Test epoch/loss: %d %s %s\n' % (epoch, str(v_loss), str(t_loss)))                                    
-                
+                    fout.write('Val/Test epoch/loss: %d %s %s\n' % (epoch, str(v_loss), str(t_loss)))                              
                 
                 # Students: add code that checks if the validation got better. If it did, save the model.
-
+                if val_loss > val_loss_best:
+                    val_loss_best = val_loss
+                    self.saver.save(self.sess, checkpoint_path)
                     
 
         return np.array(train_loss), np.array(val_loss), np.array(test_loss)
