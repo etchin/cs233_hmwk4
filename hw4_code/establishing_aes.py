@@ -18,6 +18,8 @@ from hw4_code.neural_net import Neural_Net_Conf
 from hw4_code.encoders_decoders import encoder_with_convs_and_symmetry, decoder_with_fc_only
 from hw4_code.in_out_utils import unpickle_data, pickle_data, create_dir
 
+from mpl_toolkits.mplot3d import Axes3D
+
 
 # Students: If you run your code with Python3 instead of Python2 (like in Azzure) set python_2to3=True
 python_2to3 = False
@@ -103,23 +105,73 @@ if do_training:
         train_loss, val_loss, test_loss = ae.train_model(net_data, n_epochs, batch_size, save_dir,\
                                                          held_out_step, fout=file_out)
 
+        
+# Plot the training, etc. loss
+do_plot = True
 
+if do_plot:
+    
+    file_out_plot = osp.join(save_dir, 'error_plot.png')
+        
+    x = range(1, n_epochs+1)
+    plt.plot(x, train_loss, 'o-', x, val_loss, 'o-', x, test_loss, 'o-')
+    plt.legend(["Training", "Validation", "Test"])
+    plt.savefig(file_out_plot)
+    #plt.show()
+        
 # Done Training? Congrats!
 
 # If you want to resume training it is possible, but be-careful to NOT over-write 
 # the saved pre-trained model!
 
 
-
 # Load model on optimal (per validation) epoch.
-epoch_to_restore = # Student 
-ae.restore_model(save_dir, epoch_to_restore, verbose=True)
+epoch_to_restore = val_loss.index(max(val_loss))# Student #DID THIS!
+ae.restore_model(save_dir, epoch_to_restore, verbose=True) # Could also restore the model that was saved from file
 
 # Students: Save-plot reconstructions.
 n_plots = 5
 in_pc = test_data.pcs[:n_plots]
 in_names = test_data.model_names[:n_plots]
 in_masks = test_data.part_masks[:n_plots]
+
+# Students: Save-plot reconstructions.
+
+test_pcs = test_data.pcs
+test_names = test_data.model_names
+batch_size = 50
+l_codes = np.zeros((150,128))
+# Didn't want to deal with the whole placeholder thing so I just ran this in 3 batches of 50
+for i in range(3):
+    feed = ae.prepare_feed(net_data['test'].extract(range(50*i,50*(i+1))), batch_size)
+    l_codes[(50*i):(50*(i+1)),:] = ae.sess.run([ae.no_op, ae.z], feed_dict=feed)[1]
+    
+# Feed the first 50 data pcs again so we can extract the reconstructed pcs
+feed = ae.prepare_feed(net_data['test'].extract(range(50)), batch_size)
+test_reconstr = ae.sess.run([ae.no_op, ae.pc_reconstr], feed_dict=feed)[1]
+    
+n_plots = 5
+in_pc = test_data.pcs[:n_plots]
+in_names = test_data.model_names[:n_plots]
+
+for i in range(n_plots):
+    
+    original_figure_file = osp.join(save_dir, 'original_figure', i, '.png')
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(in_pc[i,:,0], in_pc[i,:,1], in_pc[i,:,2], marker='.')
+    plt.savefig(original_figure_file)
+
+    
+    reconstr_figure_file = osp.join(save_dir, 'reconstr_figure', i, '.png')
+
+    fig = plt.figure()
+    ax = fig.add_subplot(211, projection='3d')
+    ax.scatter(test_reconstr[i,:,0], test_reconstr[i,:,1], test_reconstr[i,:,2], marker='.')
+    plt.savefig(reconstr_figure_file)
+
+
 
 # Students: Save-plot masks of predictions, report accuracy.
 if pc_ae_conf.use_parts:    
@@ -129,5 +181,10 @@ if pc_ae_conf.use_parts:
 # Extract and save latent codes of test chairs.
 test_pcs = test_data.pcs
 test_names = test_data.model_names
-l_codes = # Students: compute this.
+batch_size = 50
+l_codes = np.zeros((150,128))
+for i in range(3):
+    feed = ae.prepare_feed(net_data['test'].extract(range(50*i,50*(i+1))), batch_size)
+    l_codes[(50*i):(50*(i+1)),:] = ae.sess.run([ae.no_op, ae.z], feed_dict=feed)[1]
+
 np.savez(osp.join(save_dir, 'latent_codes'), l_codes=l_codes, test_names=test_names)

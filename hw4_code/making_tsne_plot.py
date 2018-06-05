@@ -18,7 +18,7 @@ latent_codes = in_d['l_codes']         # in the end of establishing_aes.py
 test_names = in_d['test_names']
 
 # Students: Compute 2D TSNE
-# tsne_lcodes = ...
+tsne_lcodes = TSNE(n_components=2).fit_transform(latent_codes)
 
 im_files = []
 top_im_dir = '../data/in/images/'
