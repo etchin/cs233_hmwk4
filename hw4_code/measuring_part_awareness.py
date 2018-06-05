@@ -43,7 +43,6 @@ def model_stats(latent_vectors,shape_names,part_dist):
         neighbor_id = shape_names[knn[key][0][0]]
         m_dist = knn[key][0][1]
         matched_dist += m_dist
-        x_loc = id_to_part_loc[sn_id][part_id]
         for i,part in enumerate(sn_id_to_parts[sn_id]):
             if part in sn_id_to_parts[neighbor_id]:
                 cum_dist += part_dist[id_to_part_loc[sn_id][part],
