@@ -34,8 +34,9 @@ class Neural_Net(object):
     def restore_model(self, model_path, epoch, verbose=False):
         '''Restore all the variables of a saved model.
         '''
-        self.saver.restore(self.sess, osp.join(model_path, MODEL_SAVER_ID + '-' + str(int(epoch))))
-
+        #self.saver.restore(self.sess, osp.join(model_path, MODEL_SAVER_ID + '-' + str(int(epoch))))
+        self.saver.restore(self.sess, osp.join(model_path, MODEL_SAVER_ID))
+        
         if self.epoch.eval(session=self.sess) != epoch:
             warnings.warn('Loaded model\'s epoch doesn\'t match the requested one.')
         else:
