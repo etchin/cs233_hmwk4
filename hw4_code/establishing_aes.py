@@ -108,7 +108,7 @@ if do_training:
         
 # Plot the training, etc. loss
 
-do_plot = True
+do_plot = False
 
 if do_plot:
     
@@ -154,23 +154,24 @@ n_plots = 5
 in_pc = test_data.pcs[:n_plots]
 in_names = test_data.model_names[:n_plots]
 
+if do_plot:
 
-for i in range(n_plots):
-    
-    original_figure_file = osp.join(save_dir, 'original_figure_'+str(i)+'.png')
+    for i in range(n_plots):
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(in_pc[i,:,0], in_pc[i,:,1], in_pc[i,:,2], marker='.')
-    plt.savefig(original_figure_file)
+        original_figure_file = osp.join(save_dir, 'original_figure_'+str(i)+'.png')
 
-    
-    reconstr_figure_file = osp.join(save_dir, 'reconstr_figure_'+str(i)+'.png')
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.scatter(in_pc[i,:,0], in_pc[i,:,1], in_pc[i,:,2], marker='.')
+        plt.savefig(original_figure_file)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(test_reconstr[i,:,0], test_reconstr[i,:,1], test_reconstr[i,:,2], marker='.')
-    plt.savefig(reconstr_figure_file)
+
+        reconstr_figure_file = osp.join(save_dir, 'reconstr_figure_'+str(i)+'.png')
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.scatter(test_reconstr[i,:,0], test_reconstr[i,:,1], test_reconstr[i,:,2], marker='.')
+        plt.savefig(reconstr_figure_file)
 
 
 
